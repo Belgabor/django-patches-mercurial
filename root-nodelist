@@ -1,0 +1,19 @@
+root node list for templates
+
+diff -r f980974cf76e django/template/__init__.py
+--- a/django/template/__init__.py
++++ b/django/template/__init__.py
+@@ -260,10 +260,13 @@
+         self.filters = {}
+         for lib in builtins:
+             self.add_library(lib)
++        self.root_nodelist = None
+ 
+     def parse(self, parse_until=None):
+         if parse_until is None: parse_until = []
+         nodelist = self.create_nodelist()
++        if self.root_nodelist is None:
++            self.root_nodelist = nodelist
+         while self.tokens:
+             token = self.next_token()
+             if token.token_type == TOKEN_TEXT:
