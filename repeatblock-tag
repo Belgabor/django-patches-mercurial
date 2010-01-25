@@ -1,6 +1,6 @@
 repeatblock tag for templates
 
-diff -r 0130fcefa376 django/templatetags/repeatblock.py
+diff -r 1838abeae1eb django/templatetags/repeatblock.py
 --- /dev/null
 +++ b/django/templatetags/repeatblock.py
 @@ -0,0 +1,30 @@
@@ -19,7 +19,7 @@ diff -r 0130fcefa376 django/templatetags/repeatblock.py
 +        return self.block.nodelist
 +
 +    def render(self, context):
-+        return self.nodelist.render(context)
++        return self.block.render(context)
 +
 +
 +@register.tag
