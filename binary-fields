@@ -1,25 +1,25 @@
 add binary fields
 
-diff -r 6c3a767f0daa django/db/backends/__init__.py
+diff -r 20889a41de5e django/db/backends/__init__.py
 --- a/django/db/backends/__init__.py
 +++ b/django/db/backends/__init__.py
-@@ -206,7 +206,11 @@
+@@ -207,7 +207,11 @@
          from django.utils.encoding import smart_unicode, force_unicode
  
          # Convert params to contain Unicode values.
--        to_unicode = lambda s: force_unicode(s, strings_only=True)
+-        to_unicode = lambda s: force_unicode(s, strings_only=True, errors='replace')
 +        def to_unicode(s):
 +            if isinstance(s,buffer):
 +                return u'<binary data buffer size %d>' % len(s)
-+            return force_unicode(s, strings_only=True)
++            return force_unicode(s, strings_only=True, errors='replace')
 +        
          if isinstance(params, (list, tuple)):
              u_params = tuple([to_unicode(val) for val in params])
          else:
-diff -r 6c3a767f0daa django/db/backends/mysql/base.py
+diff -r 20889a41de5e django/db/backends/mysql/base.py
 --- a/django/db/backends/mysql/base.py
 +++ b/django/db/backends/mysql/base.py
-@@ -30,6 +30,7 @@
+@@ -32,6 +32,7 @@
  from django.db.backends.mysql.creation import DatabaseCreation
  from django.db.backends.mysql.introspection import DatabaseIntrospection
  from django.db.backends.mysql.validation import DatabaseValidation
@@ -27,7 +27,7 @@ diff -r 6c3a767f0daa django/db/backends/mysql/base.py
  from django.utils.safestring import SafeString, SafeUnicode
  
  # Raise exceptions for database warnings if DEBUG is on
-@@ -47,10 +48,22 @@
+@@ -49,10 +50,22 @@
  # add special handling for SafeUnicode and SafeString as MySQLdb's type
  # checking is too tight to catch those (see Django ticket #6052).
  django_conversions = conversions.copy()
@@ -50,7 +50,7 @@ diff -r 6c3a767f0daa django/db/backends/mysql/base.py
  })
  
  # This should match the numerical portion of the version numbers (we can treat
-diff -r 6c3a767f0daa django/db/backends/mysql/creation.py
+diff -r 20889a41de5e django/db/backends/mysql/creation.py
 --- a/django/db/backends/mysql/creation.py
 +++ b/django/db/backends/mysql/creation.py
 @@ -7,6 +7,8 @@
@@ -62,7 +62,7 @@ diff -r 6c3a767f0daa django/db/backends/mysql/creation.py
          'BooleanField':      'bool',
          'CharField':         'varchar(%(max_length)s)',
          'CommaSeparatedIntegerField': 'varchar(%(max_length)s)',
-diff -r 6c3a767f0daa django/db/backends/mysql/introspection.py
+diff -r 20889a41de5e django/db/backends/mysql/introspection.py
 --- a/django/db/backends/mysql/introspection.py
 +++ b/django/db/backends/mysql/introspection.py
 @@ -7,7 +7,10 @@
@@ -87,7 +87,7 @@ diff -r 6c3a767f0daa django/db/backends/mysql/introspection.py
          FIELD_TYPE.VAR_STRING: 'CharField',
      }
  
-diff -r 6c3a767f0daa django/db/backends/postgresql/creation.py
+diff -r 20889a41de5e django/db/backends/postgresql/creation.py
 --- a/django/db/backends/postgresql/creation.py
 +++ b/django/db/backends/postgresql/creation.py
 @@ -7,6 +7,8 @@
@@ -99,7 +99,7 @@ diff -r 6c3a767f0daa django/db/backends/postgresql/creation.py
          'BooleanField':      'boolean',
          'CharField':         'varchar(%(max_length)s)',
          'CommaSeparatedIntegerField': 'varchar(%(max_length)s)',
-diff -r 6c3a767f0daa django/db/backends/postgresql/introspection.py
+diff -r 20889a41de5e django/db/backends/postgresql/introspection.py
 --- a/django/db/backends/postgresql/introspection.py
 +++ b/django/db/backends/postgresql/introspection.py
 @@ -4,6 +4,7 @@
@@ -110,7 +110,7 @@ diff -r 6c3a767f0daa django/db/backends/postgresql/introspection.py
          20: 'BigIntegerField',
          21: 'SmallIntegerField',
          23: 'IntegerField',
-diff -r 6c3a767f0daa django/db/backends/sqlite3/creation.py
+diff -r 20889a41de5e django/db/backends/sqlite3/creation.py
 --- a/django/db/backends/sqlite3/creation.py
 +++ b/django/db/backends/sqlite3/creation.py
 @@ -8,6 +8,8 @@
@@ -122,10 +122,10 @@ diff -r 6c3a767f0daa django/db/backends/sqlite3/creation.py
          'BooleanField':                 'bool',
          'CharField':                    'varchar(%(max_length)s)',
          'CommaSeparatedIntegerField':   'varchar(%(max_length)s)',
-diff -r 6c3a767f0daa django/db/models/fields/__init__.py
+diff -r 20889a41de5e django/db/models/fields/__init__.py
 --- a/django/db/models/fields/__init__.py
 +++ b/django/db/models/fields/__init__.py
-@@ -504,6 +504,23 @@
+@@ -484,6 +484,23 @@
      def formfield(self, **kwargs):
          return None
  
